@@ -1,0 +1,587 @@
+Private Sub CommandButton1_Click()
+Dim SHT As Worksheet
+Dim strFile As String
+Dim i As Integer: i = 1
+Dim x As Integer: x = 1
+Dim y As Integer: y = 5
+Dim myFile As String
+Dim text As String
+Dim textline As String
+Dim item As Variant
+Dim GetDate As String
+Dim getDay As String
+Dim getMonth As String
+Dim getYear As String
+Dim stringCount As Integer
+Dim totalPayment As Long: totalPayment = 0
+Dim studentCount As Integer: studentCount = 0
+Dim titleHeaderPos As Integer
+Dim totalPaymentPosY As Integer
+Dim dob As String
+Dim cisd As String
+Dim pscd As String
+Dim psed As String
+Dim amount As String
+Dim code As String
+Dim lookupCode As Variant
+Dim d As String
+
+If Not GetWorksheet("Type 2") Is Nothing Then
+    Application.DisplayAlerts = False
+    Worksheets("Type 2").Delete
+    Application.DisplayAlerts = True
+End If
+
+    Do
+        With Application.FileDialog(msoFileDialogFolderPicker)
+            .InitialFileName = "C:\Users\enadela\Documents\project\vba excel loan process\"
+            .AllowMultiSelect = False
+            .Show
+            
+            If .SelectedItems.Count > 0 Then
+                
+                fPath = .SelectedItems(1) & "\"
+                Set SHT = Worksheets("Application")
+                strFile = Dir(fPath, vbNormal)
+                Set ws2 = ThisWorkbook.Worksheets.Add(After:=ActiveSheet)
+                ws2.Name = "Type 2"
+                
+                Do While strFile <> ""
+                    myFile = fPath & strFile
+                    strFile = Dir()
+                    Open myFile For Input As #1
+                    Do Until EOF(1)
+                        Line Input #1, textline
+                        text = text & textline
+                    Loop
+                    Close #1
+                    
+                    Dim SingleValue() As String
+                    OpenStatusBar
+                    text = WorksheetFunction.Trim(text)
+                    SingleValue = Split(text, " ")
+                        For Each item In SingleValue
+                            
+                            If Not IsEmpty(item) Then
+                                stringCount = Len(item)
+                                If stringCount = 57 Then
+                                    ws2.Cells(x, y).Value = "EI Code"
+                                    code = Mid(item, 3, 4)
+                                    ws2.Cells(x, y).Font.Bold = True
+                                    ws2.Cells(x, y + 1).Value = Mid(item, 3, 4)
+                                    ws2.Cells(x, y + 1).Font.Bold = True
+                                    
+                                    getYear = Mid(item, 15, 4)
+                                    getMonth = Mid(item, 19, 2)
+                                    getDay = Mid(item, 21, 2)
+                                    GetDate = getMonth & "/" & getDay & "/" & getYear
+                                    d = GetDate
+                                    
+                                    If code <> "" And d <> "" Then
+                                        lookupCode = GetCode(code, x)
+                                        ws2.Cells(x, 1).Value = d
+                                        ws2.Cells(x, 2).Value = code
+                                        ws2.Cells(x, 3).Value = lookupCode(0)
+                                        ws2.Cells(x, 4).Value = lookupCode(1)
+                                    End If
+                                    
+                                    ws2.Cells(x, y + 3).Value = "Number of Students: "
+                                    ws2.Cells(x, y + 3).Font.Bold = True
+                                    ws2.Cells(x + 1, y + 3).Value = "Total Amount: "
+                                    ws2.Cells(x + 1, y + 3).Font.Bold = True
+                                    titleHeaderPos = x
+                                    totalPaymentPosY = y
+                                    
+                                   
+                                    'show date of the file
+                                    ws2.Cells(x + 1, y).Value = "Released Date: "
+                                    ws2.Cells(x + 1, y).Font.Bold = True
+                                    ws2.Cells(x + 1, y + 1).Value = GetDate
+                                    ws2.Cells(x + 1, y + 1).Font.Bold = True
+                                    
+                                    If code <> "" And d <> "" Then
+                                        lookupCode = GetCode(code, x)
+                                        ws2.Cells(x + 1, 1).Value = d
+                                        ws2.Cells(x + 1, 2).Value = code
+                                        ws2.Cells(x + 1, 3).Value = lookupCode(0)
+                                        ws2.Cells(x + 1, 4).Value = lookupCode(1)
+                                    End If
+                                    
+                                    x = x + 2
+                                    
+                                    If code <> "" And d <> "" Then
+                                        lookupCode = GetCode(code, x)
+                                        ws2.Cells(x, 1).Value = d
+                                        ws2.Cells(x, 2).Value = code
+                                        ws2.Cells(x, 3).Value = lookupCode(0)
+                                        ws2.Cells(x, 4).Value = lookupCode(1)
+                                    End If
+                                    
+                                    ws2.Cells(x, y).Value = "SIN"
+                                    ws2.Cells(x, y + 1).Value = "EI Student ID"
+                                    ws2.Cells(x, y + 2).Value = "Surname"
+                                    ws2.Cells(x, y + 3).Value = "Given Name"
+                                    ws2.Cells(x, y + 4).Value = "Date of Birth"
+                                    ws2.Cells(x, y + 5).Value = "Certificate issue date"
+                                    ws2.Cells(x, y + 6).Value = "PSCD"
+                                    ws2.Cells(x, y + 7).Value = "PSED"
+                                    ws2.Cells(x, y + 8).Value = "Amount"
+                                    
+                                    ws2.Cells(x, y).Font.Bold = True
+                                    ws2.Cells(x, y + 1).Font.Bold = True
+                                    ws2.Cells(x, y + 2).Font.Bold = True
+                                    ws2.Cells(x, y + 3).Font.Bold = True
+                                    ws2.Cells(x, y + 4).Font.Bold = True
+                                    ws2.Cells(x, y + 5).Font.Bold = True
+                                    ws2.Cells(x, y + 6).Font.Bold = True
+                                    ws2.Cells(x, y + 7).Font.Bold = True
+                                    ws2.Cells(x, y + 8).Font.Bold = True
+                                    
+                                    x = x + 1
+                                    
+                                Else
+                                    'get the total payments
+                                    If code <> "" And d <> "" Then
+                                        lookupCode = GetCode(code, x)
+                                        ws2.Cells(x, 1).Value = d
+                                        ws2.Cells(x, 2).Value = code
+                                        ws2.Cells(x, 3).Value = lookupCode(0)
+                                        ws2.Cells(x, 4).Value = lookupCode(1)
+                                    End If
+                                    
+                                    If stringCount = 7 And item Like "#*" Then
+                                        item = Left(item, Len(item) - 2) & "." & Right(item, 2)
+                                        totalPayment = totalPayment + item
+                                        ws2.Cells(titleHeaderPos + 1, totalPaymentPosY + 4).Value = FormatCurrency(totalPayment, 2)
+                                        ws2.Cells(titleHeaderPos + 1, totalPaymentPosY + 4).Font.Bold = True
+                                        ws2.Cells(x, y + 8).Value = FormatCurrency(item)
+                                        x = x + 1
+                                    'get SIN
+                                    ElseIf stringCount = 11 Or stringCount = 20 Or stringCount = 21 Then
+                                        If Left(item, 2) = "EI" Then
+                                            'get all the number of students
+                                            studentCount = studentCount + 1
+                                            ws2.Cells(titleHeaderPos, y + 4).Value = studentCount
+                                            ws2.Cells(titleHeaderPos, y + 4).Font.Bold = True
+                                            ws2.Cells(x, y).Value = Mid(item, 3, 9)
+                                            If stringCount = 20 Then
+                                                ws2.Cells(x, y + 1).Value = Right(item, 9)
+                                            End If
+                                        End If
+                                    ElseIf stringCount = 32 Then
+                                        dob = FormatToDate(Left(item, 8))
+                                        cisd = FormatToDate(Mid(item, 9, 8))
+                                        pscd = FormatToDate(Mid(item, 17, 8))
+                                        psed = FormatToDate(Mid(item, 25, 8))
+                                        
+                                        ws2.Cells(x, y + 4).Value = dob
+                                        ws2.Cells(x, y + 5).Value = cisd
+                                        ws2.Cells(x, y + 6).Value = pscd
+                                        ws2.Cells(x, y + 7).Value = psed
+                                        
+                                    Else
+                                        If IsEmpty(ws2.Cells(x, y + 2).Value) = True Then
+                                            ws2.Cells(x, y + 2).Value = item
+                                        Else
+                                            If IsEmpty(ws2.Cells(x, y + 3).Value) = True Then
+                                                ws2.Cells(x, y + 3).Value = ws2.Cells(x, y + 3).Value & item
+                                            Else
+                                                ws2.Cells(x, y + 3).Value = item
+                                            End If
+                                        End If
+                                    End If
+                                End If
+                            End If
+                            
+                            DoEvents
+                            Call RunStatusBar(x)
+                    Next item
+                    text = ""
+                    studentCount = 0
+                    totalPayment = 0
+                    ws2.Rows(x).Delete
+                    x = x + 3
+                    i = i + 1
+                    
+                    ws2.UsedRange.Columns.AutoFit
+                Loop
+                Unload StatusBar
+                UserForm2.Show
+                Exit Do
+            Else
+                If MsgBox("No folder chose, do you wish to abort?", _
+                    vbYesNo) = vbYes Then Exit Sub
+            End If
+        End With
+    Loop
+
+End Sub
+
+Function FormatToDate(CellDate As String)
+    Dim y As String
+    Dim m As String
+    Dim d As String
+    y = Mid(CellDate, 1, 4)
+    m = Mid(CellDate, 5, 2)
+    d = Mid(CellDate, 7, 2)
+    FormatToDate = m & "/" & d & "/" & y
+End Function
+
+Private Sub CommandButton2_Click()
+Dim SHT As Worksheet
+Dim strFile As String
+Dim i As Integer: i = 1
+Dim myFile As String
+Dim text As String
+Dim textline As String
+Dim x As Integer: x = 1
+Dim y As Integer: y = 5
+Dim ctr As Integer: ctr = 1
+Dim br As Integer: br = 1
+Dim code As String
+Dim lookupCode As Variant
+Dim d As String
+
+If Not GetWorksheet("Type 1") Is Nothing Then
+    Application.DisplayAlerts = False
+    Worksheets("Type 1").Delete
+    Application.DisplayAlerts = True
+End If
+            
+Do
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        .InitialFileName = "C:\Users\enadela\Documents\project\vba excel loan process\"
+        .AllowMultiSelect = False
+        .Show
+        
+        If .SelectedItems.Count > 0 Then
+            code = ""
+            d = ""
+            fPath = .SelectedItems(1) & "\"
+            Set SHT = Worksheets("Application")
+            strFile = Dir(fPath, vbNormal)
+            Set ws2 = ThisWorkbook.Worksheets.Add(After:=ActiveSheet)
+            ws2.Name = "Type 1"
+            Do While strFile <> ""
+                myFile = fPath & strFile
+                strFile = Dir()
+                Open myFile For Input As #1
+                Do Until EOF(1)
+                    Line Input #1, textline
+                    text = text & textline
+                Loop
+                Close #1
+                
+                Dim SingleValue() As String
+                SingleValue = Split(text, ",")
+                OpenStatusBar
+                For Each item In SingleValue
+                    
+                    
+                    If ctr < 11 Then
+                        If ctr = 2 Then
+                            code = item
+                        ElseIf ctr = 4 Then
+                            d = item
+                        End If
+                        If code <> "" And d <> "" Then
+                            lookupCode = GetCode(code, x)
+                            ws2.Cells(x, 1).Value = d
+                            ws2.Cells(x, 2).Value = code
+                            ws2.Cells(x, 3).Value = lookupCode(0)
+                            ws2.Cells(x, 4).Value = lookupCode(1)
+                        End If
+                        
+                        ws2.Cells(x, y).Value = item
+                        y = y + 1
+                    ElseIf ctr = 11 Then
+                        If Len(item) >= 11 Then
+                            ws2.Cells(x, y).Value = Left(item, (Len(item) - 10))
+                            y = y + 1
+                        End If
+                        x = x + 2
+                        y = 5
+                        
+                        If code <> "" And d <> "" Then
+                            lookupCode = GetCode(code, x)
+                            ws2.Cells(x, 1).Value = d
+                            ws2.Cells(x, 2).Value = code
+                            ws2.Cells(x, 3).Value = lookupCode(0)
+                            ws2.Cells(x, 4).Value = lookupCode(1)
+                        End If
+                        ws2.Cells(x, y).Value = Right(item, 10)
+                        y = y + 1
+                    ElseIf ctr = 21 Then
+                        ws2.Cells(x, y).Value = Left(item, 7)
+                        x = x + 1
+                        y = 5
+                        br = 1
+                        
+                        If code <> "" And d <> "" Then
+                            lookupCode = GetCode(code, x)
+                            ws2.Cells(x, 1).Value = d
+                            ws2.Cells(x, 2).Value = code
+                            ws2.Cells(x, 3).Value = lookupCode(0)
+                            ws2.Cells(x, 4).Value = lookupCode(1)
+                        End If
+                        ws2.Cells(x, y).Value = Right(item, (Len(item) - 7))
+                        y = y + 1
+                    
+                    Else
+                        If br = 10 Then
+                            If Right(item, 1) Like "*[a-zA-Z]*" Then
+                                ws2.Cells(x, y).Value = Left(item, (Len(item) - 4))
+                                br = 1
+                                x = x + 1
+                                y = 5
+                                If code <> "" And d <> "" Then
+                                    lookupCode = GetCode(code, x)
+                                    ws2.Cells(x, 1).Value = d
+                                    ws2.Cells(x, 2).Value = code
+                                    ws2.Cells(x, 3).Value = lookupCode(0)
+                                    ws2.Cells(x, 4).Value = lookupCode(1)
+                                End If
+                                ws2.Cells(x, y).Value = Right(item, 4)
+                                y = y + 1
+                            Else
+                                If code <> "" And d <> "" Then
+                                    lookupCode = GetCode(code, x)
+                                    ws2.Cells(x, 1).Value = d
+                                    ws2.Cells(x, 2).Value = code
+                                    ws2.Cells(x, 3).Value = lookupCode(0)
+                                    ws2.Cells(x, 4).Value = lookupCode(1)
+                                End If
+                                br = 1
+                                ws2.Cells(x, y).Value = item
+                                x = x + 1
+                                y = 5
+                            End If
+                            
+                        Else
+                            ws2.Cells(x, y).Value = item
+                            br = br + 1
+                            y = y + 1
+                        End If
+                    End If
+                    ctr = ctr + 1
+                    DoEvents
+                    Call RunStatusBar(x)
+                Next item
+                ctr = 1
+                text = ""
+                x = x + 1
+                y = 5
+                i = i + 1
+                
+                
+            Loop
+            ws2.Cells(x, y).Value = " "
+            ws2.UsedRange.Columns.AutoFit
+            Unload StatusBar
+            UserForm2.Show
+            Exit Do
+        Else
+            If MsgBox("No folder chose, do you wish to abort?", _
+                vbYesNo) = vbYes Then Exit Sub
+        End If
+    End With
+Loop
+End Sub
+
+
+Function GetWorksheet(shtName As String) As Worksheet
+    On Error Resume Next
+    Set GetWorksheet = Worksheets(shtName)
+End Function
+
+    
+Private Sub CommandButton3_Click()
+    Dim Ary As Variant
+    Dim Ws As Worksheet
+    If GetWorksheet("Type 1") Is Nothing Then
+        On Error GoTo Err
+    End If
+    If GetWorksheet("Type 2") Is Nothing Then
+        On Error GoTo Err
+    End If
+    
+    Ary = Array("Type 1", "Type 2")
+    Sheets("Merge").Name = "Merge"
+    For Each Ws In Worksheets(Ary)
+        Ws.UsedRange.Offset(0).Copy Sheets("Merge").Range("A" & Rows.Count).End(xlUp).Offset(0)
+        Application.DisplayAlerts = False
+        Ws.Delete
+        Application.DisplayAlerts = True
+    Next Ws
+    Sheets("Merge").UsedRange.Columns.AutoFit
+    
+    Set NewBook = Workbooks.Add
+    ThisWorkbook.Sheets("Merge").Copy Before:=NewBook.Sheets(1)
+    ThisWorkbook.Sheets("Merge").Cells.Clear
+    date_today = Now()
+    ActiveWorkbook.SaveAs "C:\Users\enadela\Documents\project\vba excel loan process\processed files\" & Format(date_today, "m.d.yy.h.mm.ss") & ".xlsx"
+    
+Done:
+    Exit Sub
+Err:
+    MsgBox "Complete the upload of Type 1 and Type 2"
+End Sub
+
+Function GetCode(code As String, x As Integer)
+    Dim varData(2) As Variant
+   Select Case code
+        Case "APIM"
+            varData(0) = "604"
+            varData(1) = "CDI"
+        Case "AQBQ"
+            varData(0) = "301"
+            varData(1) = "VCC"
+        Case "BPSS"
+            varData(0) = "401"
+            varData(1) = "VCC"
+        Case "BPLH"
+            varData(0) = "402"
+            varData(1) = "VCC"
+        Case "BPCN"
+            varData(0) = "471"
+            varData(1) = "VCC"
+        Case "BPLG"
+            varData(0) = "472"
+            varData(1) = "VCC"
+        Case "BPSY"
+            varData(0) = "474"
+            varData(1) = "VCC"
+        Case "APMW"
+            varData(0) = "501"
+            varData(1) = "VCC"
+        Case "APWR"
+            varData(0) = "502"
+            varData(1) = "VCC"
+        Case "APYS"
+            varData(0) = "503"
+            varData(1) = "VCC"
+        Case "APZJ"
+            varData(0) = "504"
+            varData(1) = "VCC"
+        Case "APNE"
+            varData(0) = "505"
+            varData(1) = "VCC"
+        Case "APZQ"
+            varData(0) = "506"
+            varData(1) = "VCC"
+        Case "AQAZ"
+            varData(0) = "507"
+            varData(1) = "VCC"
+        Case "APUL"
+            varData(0) = "508"
+            varData(1) = "VCC"
+        Case "APPA"
+            varData(0) = "601"
+            varData(1) = "CDI"
+        Case "APIN"
+            varData(0) = "602"
+            varData(1) = "CDI"
+        Case "APVP"
+            varData(0) = "603"
+            varData(1) = "CDI"
+        Case "APIM"
+            varData(0) = "604"
+            varData(1) = "CDI"
+        Case "APBX"
+            varData(0) = "605"
+            varData(1) = "CDI"
+        Case "APSH"
+            varData(0) = "609"
+            varData(1) = "CDI"
+        Case "APUW"
+            varData(0) = "610"
+            varData(1) = "CDI"
+        Case "EPWH"
+            varData(0) = "664"
+            varData(1) = "CDI"
+        Case "EPLR"
+            varData(0) = "662"
+            varData(1) = "CDI"
+        Case "EPLS"
+            varData(0) = "663"
+            varData(1) = "CDI"
+        Case "EPTI"
+            varData(0) = "665"
+            varData(1) = "CDI"
+        Case "EPEM"
+            varData(0) = "667"
+            varData(1) = "CDI"
+        Case "EPFS"
+            varData(0) = "668"
+            varData(1) = "CDI"
+        Case "BPLB"
+            varData(0) = "671"
+            varData(1) = "CDI"
+        Case "BPLC"
+            varData(0) = "672"
+            varData(1) = "CDI"
+        Case "BPMU"
+            varData(0) = "673"
+            varData(1) = "CDI"
+        Case "BPLD"
+            varData(0) = "674"
+            varData(1) = "CDI"
+        Case "BPLE"
+            varData(0) = "675"
+            varData(1) = "CDI"
+        Case "BPLY"
+            varData(0) = "676"
+            varData(1) = "CDI"
+        Case "BPMV"
+            varData(0) = "677"
+            varData(1) = "CDI"
+        Case "BPPV"
+            varData(0) = "678"
+            varData(1) = "CDI"
+        Case "DPDO"
+            varData(0) = "680"
+            varData(1) = "CDI"
+        Case "APUK"
+            varData(0) = "701"
+            varData(1) = "UCW"
+        Case "APDH"
+            varData(0) = "704"
+            varData(1) = "UCW"
+        Case "APUC"
+            varData(0) = "CORPORATE"
+            varData(1) = " "
+        Case "BPTZ"
+            varData(0) = "801"
+            varData(1) = "VCAD"
+        Case "BPVA"
+            varData(0) = "473"
+            varData(1) = " "
+        Case "BPUZ"
+            varData(0) = "475"
+            varData(1) = " "
+        Case "BPUR"
+            varData(0) = "476"
+            varData(1) = " "
+      Case Else
+         MsgBox "Unknown"
+   End Select
+   
+   GetCode = varData
+End Function
+
+
+Sub OpenStatusBar()
+
+    With StatusBar
+        .LabelData.Caption = "0 Row"
+        .Show vbModeless
+    End With
+
+End Sub
+
+Sub RunStatusBar(x As Integer)
+    With StatusBar
+        .LabelData.Caption = x & " Rows"
+    End With
+End Sub
+
